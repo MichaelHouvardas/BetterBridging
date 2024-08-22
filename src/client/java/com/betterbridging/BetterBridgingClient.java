@@ -18,14 +18,21 @@ import org.lwjgl.glfw.GLFW;
 public class BetterBridgingClient implements ClientModInitializer {
 
 	private static KeyBinding togglePlaceBlockKeybind;
+	private static KeyBinding placeBlockOnceKeybind;
 	private boolean placingBlocks = false; // Toggle flag
 
 	@Override
 	public void onInitializeClient() {
-		// Register the keybinding
+		// Register the keybindings
 		togglePlaceBlockKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
 				"key.betterbridging.toggle_place_block_below", // Translation key
 				GLFW.GLFW_KEY_B, // Default key is 'B'
+				"category.betterbridging" // Category
+		));
+
+		placeBlockOnceKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+				"key.betterbridging.place_block_once", // Translation key
+				GLFW.GLFW_KEY_N, // Default key is 'N'
 				"category.betterbridging" // Category
 		));
 
@@ -48,6 +55,11 @@ public class BetterBridgingClient implements ClientModInitializer {
 			// If placingBlocks is true, continue placing blocks
 			if (placingBlocks) {
 				placeBlockBelow(client);
+			}
+
+			// Check if the single-place keybind is pressed
+			if (placeBlockOnceKeybind.wasPressed()) {
+				placeBlockBelow(client); // Place block once without toggling
 			}
 		});
 	}
