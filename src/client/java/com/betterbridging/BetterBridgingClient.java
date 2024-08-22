@@ -5,6 +5,8 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
+import net.minecraft.item.BlockItem;
+import net.minecraft.text.Text;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -32,6 +34,15 @@ public class BetterBridgingClient implements ClientModInitializer {
 			if (togglePlaceBlockKeybind.wasPressed()) {
 				// Toggle the placingBlocks flag when the key is pressed
 				placingBlocks = !placingBlocks;
+
+				// Notify the player about the toggle state
+				if (client.player != null) {
+					if (placingBlocks) {
+						client.player.sendMessage(Text.literal("Block placing toggled ON"), true);
+					} else {
+						client.player.sendMessage(Text.literal("Block placing toggled OFF"), true);
+					}
+				}
 			}
 
 			// If placingBlocks is true, continue placing blocks
@@ -54,10 +65,10 @@ public class BetterBridgingClient implements ClientModInitializer {
 			// Attempt to place the block from main hand or offhand
 			BlockHitResult hitResult = new BlockHitResult(Vec3d.ofCenter(playerPos), Direction.UP, playerPos, false);
 
-			// First try with the main hand, if no block is present, try the offhand
-			if (!client.player.getMainHandStack().isEmpty()) {
+			// Check if the main hand contains a block item, otherwise use the offhand
+			if (client.player.getMainHandStack().getItem() instanceof BlockItem) {
 				client.interactionManager.interactBlock(client.player, Hand.MAIN_HAND, hitResult);
-			} else if (!client.player.getOffHandStack().isEmpty()) {
+			} else if (client.player.getOffHandStack().getItem() instanceof BlockItem) {
 				client.interactionManager.interactBlock(client.player, Hand.OFF_HAND, hitResult);
 			}
 		}
