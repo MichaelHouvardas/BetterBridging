@@ -5,7 +5,6 @@ import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
-import net.minecraft.util.ActionResult;
 import net.minecraft.util.Hand;
 import net.minecraft.util.hit.BlockHitResult;
 import net.minecraft.util.math.BlockPos;
@@ -16,20 +15,27 @@ import org.lwjgl.glfw.GLFW;
 
 public class BetterBridgingClient implements ClientModInitializer {
 
-	private static KeyBinding placeBlockBelowKeybind;
+	private static KeyBinding togglePlaceBlockKeybind;
+	private boolean placingBlocks = false; // Toggle flag
 
 	@Override
 	public void onInitializeClient() {
 		// Register the keybinding
-		placeBlockBelowKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
-				"key.betterbridging.place_block_below", // Translation key
+		togglePlaceBlockKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
+				"key.betterbridging.toggle_place_block_below", // Translation key
 				GLFW.GLFW_KEY_B, // Default key is 'B'
 				"category.betterbridging" // Category
 		));
 
 		// Register a tick event listener to check for key presses
 		ClientTickEvents.END_CLIENT_TICK.register(client -> {
-			while (placeBlockBelowKeybind.wasPressed()) {
+			if (togglePlaceBlockKeybind.wasPressed()) {
+				// Toggle the placingBlocks flag when the key is pressed
+				placingBlocks = !placingBlocks;
+			}
+
+			// If placingBlocks is true, continue placing blocks
+			if (placingBlocks) {
 				placeBlockBelow(client);
 			}
 		});
@@ -45,9 +51,15 @@ public class BetterBridgingClient implements ClientModInitializer {
 
 		// Check if we can place a block at that position
 		if (world.isAir(playerPos)) {
-			// Attempt to place the block
+			// Attempt to place the block from main hand or offhand
 			BlockHitResult hitResult = new BlockHitResult(Vec3d.ofCenter(playerPos), Direction.UP, playerPos, false);
-			client.interactionManager.interactBlock(client.player, Hand.MAIN_HAND, hitResult);
+
+			// First try with the main hand, if no block is present, try the offhand
+			if (!client.player.getMainHandStack().isEmpty()) {
+				client.interactionManager.interactBlock(client.player, Hand.MAIN_HAND, hitResult);
+			} else if (!client.player.getOffHandStack().isEmpty()) {
+				client.interactionManager.interactBlock(client.player, Hand.OFF_HAND, hitResult);
+			}
 		}
 	}
 }
