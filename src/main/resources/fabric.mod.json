@@ -19,7 +19,8 @@
 			"com.betterbridging.BetterBridging"
 		],
 		"client": [
-			"com.betterbridging.BetterBridgingClient"
+			"com.betterbridging.BetterBridgingClient",
+			"com.betterbridging.FiveBlockRadius"
 		]
 	},
 	"mixins": [
