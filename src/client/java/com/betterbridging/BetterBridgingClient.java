@@ -3,6 +3,7 @@ package com.betterbridging;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.item.BlockItem;
@@ -72,8 +73,8 @@ public class BetterBridgingClient implements ClientModInitializer {
 		World world = client.world;
 		BlockPos playerPos = client.player.getBlockPos().down(); // Get block position below player
 
-		// Check if we can place a block at that position
-		if (world.isAir(playerPos)) {
+		// Check if we can place a block at that position (air or water)
+		if (canPlaceOn(world, playerPos)) {
 			// Attempt to place the block from main hand or offhand
 			BlockHitResult hitResult = new BlockHitResult(Vec3d.ofCenter(playerPos), Direction.UP, playerPos, false);
 
@@ -85,4 +86,10 @@ public class BetterBridgingClient implements ClientModInitializer {
 			}
 		}
 	}
+
+	// Method to check if a block can be placed on air or water
+	private boolean canPlaceOn(World world, BlockPos pos) {
+		return world.isAir(pos) || world.getBlockState(pos).isOf(Blocks.WATER);
+	}
+
 }

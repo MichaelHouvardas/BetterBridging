@@ -3,6 +3,7 @@ package com.betterbridging;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.keybinding.v1.KeyBindingHelper;
+import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.option.KeyBinding;
 import net.minecraft.item.BlockItem;
@@ -26,13 +27,13 @@ public class FiveBlockRadius implements ClientModInitializer {
 		// Register the keybindings
 		togglePlaceBlockKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
 				"key.betterbridging.toggle_place_block_below_5_Radius", // Translation key
-				GLFW.GLFW_KEY_Z, // Default key is 'B'
+				GLFW.GLFW_KEY_Z, // Default key is 'Z'
 				"category.betterbridging" // Category
 		));
 
 		placeBlockOnceKeybind = KeyBindingHelper.registerKeyBinding(new KeyBinding(
 				"key.betterbridging.place_block_once_5_Radius", // Translation key
-				GLFW.GLFW_KEY_X, // Default key is 'N'
+				GLFW.GLFW_KEY_X, // Default key is 'X'
 				"category.betterbridging" // Category
 		));
 
@@ -80,8 +81,8 @@ public class FiveBlockRadius implements ClientModInitializer {
 			for (int z = -radius; z <= radius; z++) {
 				BlockPos targetPos = playerPos.add(x, 0, z); // Position relative to the player's feet
 
-				// Check if we can place a block at that position
-				if (world.isAir(targetPos)) {
+				// Check if we can place a block at that position (air or water)
+				if (canPlaceOn(world, targetPos)) {
 					BlockHitResult hitResult = new BlockHitResult(Vec3d.ofCenter(targetPos), Direction.UP, targetPos, false);
 
 					// Attempt to place the block from main hand or offhand
@@ -93,5 +94,10 @@ public class FiveBlockRadius implements ClientModInitializer {
 				}
 			}
 		}
+	}
+
+	// Method to check if a block can be placed on air or water
+	private boolean canPlaceOn(World world, BlockPos pos) {
+		return world.isAir(pos) || world.getBlockState(pos).isOf(Blocks.WATER);
 	}
 }
